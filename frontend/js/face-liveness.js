@@ -270,11 +270,11 @@ function startLivenessCheck(gpsCoords) {
     isProcessingFrame = true;
 
     try {
-      // Deteksi wajah menggunakan TinyFaceDetector terlebih dahulu (super cepat ~10-15ms per frame untuk HP & iOS)
+      // Deteksi wajah menggunakan TinyFaceDetector (inputSize 160 ultra ringan untuk mobile GPUs/CPUs)
       let detection = null;
       if (faceapi.nets.tinyFaceDetector.isLoaded) {
         detection = await faceapi
-          .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.25 }))
+          .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.20 }))
           .withFaceLandmarks();
       }
 
@@ -313,9 +313,15 @@ function startLivenessCheck(gpsCoords) {
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.save();
-        // Translate offset agar landmark menempel tepat 100% pas di atas wajah video
         ctx.translate(-offsetX, -offsetY);
-        faceapi.draw.drawFaceLandmarks(canvas, resizedDetection);
+
+        // Visualisasi ultra ringan: Ring oval emas tipis (jauh lebih ringan dari 68 titik landmark)
+        const box = resizedDetection.detection.box;
+        ctx.strokeStyle = '#eab308';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(box.x + box.width/2, box.y + box.height/2, box.width/2.2, box.height/1.8, 0, 0, 2 * Math.PI);
+        ctx.stroke();
         ctx.restore();
 
         // Ekstrak landmarks mata
@@ -389,12 +395,12 @@ function startLivenessCheck(gpsCoords) {
       isProcessingFrame = false;
     }
 
-    // Lanjutkan deteksi frame berikutnya dengan jeda 80ms (bebas lag 100%, HP mulus 60fps & tidak panas)
+    // Lanjutkan deteksi frame berikutnya dengan jeda 120ms (bebas lag 100%, HP mulus 60fps & tidak panas)
     setTimeout(() => {
       if (stream) {
         animationFrameId = requestAnimationFrame(detectFrame);
       }
-    }, 80);
+    }, 120);
   }
 
   detectFrame().catch((err) => {
