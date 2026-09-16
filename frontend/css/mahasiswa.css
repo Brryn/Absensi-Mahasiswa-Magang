@@ -1,0 +1,582 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --primary: #091a36;       /* Deep Navy */
+  --primary-light: #0c2447; /* Banner Navy */
+  --accent: #e09b12;        /* Gold/Amber 600 - Kemenham Accent */
+  --accent-light: #f59e0b;  /* Amber 500 */
+  --accent-dark: #b87c09;
+  --success: #10b981;       /* Emerald 500 */
+  --danger: #ef4444;        /* Red 500 */
+  --text: #f8fafc;          /* Slate 50 */
+  --text-muted: #94a3b8;    /* Slate 400 */
+  --bg: #090d16;            /* Midnight Dark */
+  --card-bg: #0b1528;       /* Dark card like in admin modal mockup */
+  --font: 'Plus Jakarta Sans', sans-serif;
+  --border-color: rgba(255, 255, 255, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  background-color: #06152b;
+  background-image: 
+    radial-gradient(ellipse 700px 400px at 15% 15%, rgba(26, 86, 142, 0.45) 0%, transparent 65%),
+    radial-gradient(ellipse 600px 350px at 85% 85%, rgba(224, 155, 18, 0.12) 0%, transparent 60%),
+    linear-gradient(175deg, #07172e 0%, #051122 100%);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  overflow-x: hidden;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320' preserveAspectRatio='none'%3E%3Cpath fill='none' stroke='rgba(56,189,248,0.12)' stroke-width='1.5' d='M0,224L60,208C120,192,240,160,360,170.7C480,181,600,235,720,240C840,245,960,203,1080,176C1200,149,1320,139,1380,133.3L1440,128'/%3E%3Cpath fill='none' stroke='rgba(224,155,18,0.18)' stroke-width='1.5' d='M0,256L60,245.3C120,235,240,213,360,192C480,171,600,149,720,165.3C840,181,960,235,1080,245.3C1200,256,1320,224,1380,208L1440,192'/%3E%3C/svg%3E");
+  background-size: cover;
+  background-position: bottom;
+  opacity: 0.85;
+}
+
+/* ==================== CONTAINER KARTU MODAL (DI WEBSITE/LAPTOP) ==================== */
+.app-container {
+  width: 100%;
+  max-width: 440px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+  z-index: 1;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header Absen (Modal Header Style) */
+.absen-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 0.75rem;
+  width: 100%;
+}
+
+.absen-icon-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: var(--accent);
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+.absen-header-titles {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.absen-header-titles h3 {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.absen-header-titles p {
+  font-size: 0.68rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ==================== VIEW 1: START VIEW ==================== */
+.absen-start-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+  padding: 0.75rem 0;
+}
+
+.absen-illustration-box {
+  width: 95px;
+  height: 95px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  box-shadow: none;
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.absen-start-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+/* Tombol Absensi (Gold Rectangular Style) */
+.btn-action-gold {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #0f172a;
+  border: none;
+  font-family: var(--font);
+  font-weight: 800;
+  padding: 0.85rem 1.5rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 14px rgba(224, 155, 18, 0.2);
+  transition: all 0.3s;
+  width: 100%;
+}
+
+.btn-action-gold:hover {
+  opacity: 0.95;
+  box-shadow: 0 6px 18px rgba(224, 155, 18, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-action-gold:active {
+  transform: translateY(0);
+}
+
+/* ==================== VIEW 2: CAMERA VIEW (NESTED CARD) ==================== */
+.camera-wrapper {
+  display: none; /* Muncul via JS */
+  flex-direction: column;
+  width: 100%;
+  gap: 1rem;
+}
+
+.face-capture-card {
+  background-color: #080f1b;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.cam-view-port {
+  width: 100%;
+  aspect-ratio: 4/3;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #000000;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+#webcam {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+#overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  transform: scaleX(-1);
+}
+
+.face-dashed-circle-guide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50%;
+  height: 66%;
+  border: 2px dashed rgba(224, 155, 18, 0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Instruction status box */
+.instruction-box-premium {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-align: center;
+  min-height: 40px;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(224, 155, 18, 0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==================== VIEW 3: RESULT VIEW ==================== */
+.result-wrapper {
+  display: none; /* Muncul via JS */
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.25rem;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.result-icon-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: #ffffff;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.result-icon-circle.success {
+  background: linear-gradient(135deg, #10b981, #047857);
+  border: 2px solid rgba(16, 185, 129, 0.4);
+}
+
+.result-icon-circle.info {
+  background: linear-gradient(135deg, #e09b12, #b45309);
+  border: 2px solid rgba(224, 155, 18, 0.4);
+}
+
+.result-icon-circle.failed {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  border: 2px solid rgba(239, 68, 68, 0.4);
+}
+
+.result-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.result-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.result-subtitle {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  line-height: 1.4;
+  max-width: 320px;
+}
+
+/* Result details as styled rows */
+.result-details-card {
+  background-color: #0c182c;
+  border-radius: 14px;
+  padding: 1.25rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  border: 1px solid rgba(224, 155, 18, 0.15);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.result-message-box {
+  width: 100%;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  font-size: 0.75rem;
+  color: #fca5a5;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.result-message-box.info {
+  background-color: rgba(224, 155, 18, 0.1);
+  border-color: rgba(224, 155, 18, 0.3);
+  color: #fef08a;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding-bottom: 0.5rem;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.detail-label {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.detail-val {
+  font-weight: 700;
+  color: #ffffff;
+  text-align: right;
+}
+
+.detail-val.status-hadir { color: #10b981; }
+.detail-val.status-terlambat { color: #f59e0b; }
+.detail-val.status-info { color: #38bdf8; }
+
+.btn-secondary {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-family: var(--font);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.25s;
+  width: 100%;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ==================== FOOTER ==================== */
+.footer-text {
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  line-height: 1.4;
+  margin-top: 0.5rem;
+}
+
+.footer-text a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer-text a:hover {
+  text-decoration: underline;
+}
+
+/* ==================== 5. RESPONSIVE ANDROID & IOS (FULLSCREEN PREVIEW) ==================== */
+@media (max-width: 768px) {
+  body {
+    padding: 0;
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .app-container {
+    max-width: 100%;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.85rem;
+  }
+
+  .absen-header {
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .absen-header img {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .absen-header-titles h3 {
+    font-size: 0.88rem !important;
+  }
+
+  .absen-header-titles p {
+    font-size: 0.68rem !important;
+  }
+
+  .camera-wrapper {
+    flex: 1;
+    display: none; /* Controlled by JS */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 0.85rem;
+    margin: auto 0;
+  }
+
+  .face-capture-card {
+    background-color: rgba(8, 15, 27, 0.9);
+    backdrop-filter: blur(12px);
+    border-radius: 18px;
+    padding: 0.85rem;
+    border: 1px solid rgba(224, 155, 18, 0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    width: 100%;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  }
+
+  .cam-view-port {
+    width: 100%;
+    height: 56vh;
+    max-height: 520px;
+    min-height: 320px;
+    aspect-ratio: auto;
+    border-radius: 14px;
+  }
+
+  .face-dashed-circle-guide {
+    width: 65%;
+    height: 60%;
+  }
+
+  .instruction-box-premium {
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    font-size: 0.84rem;
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(224, 155, 18, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .absen-start-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1.75rem;
+    padding: 1rem 0;
+  }
+
+  .absen-illustration-box img {
+    width: 105px !important;
+    height: 105px !important;
+  }
+
+  .absen-start-desc {
+    font-size: 0.84rem;
+    line-height: 1.6;
+    max-width: 340px;
+  }
+
+  .btn-action-gold {
+    padding: 1rem 1.5rem;
+    font-size: 0.9rem;
+    min-height: 52px;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 340px;
+  }
+
+  .result-icon-circle {
+    width: 65px;
+    height: 65px;
+    font-size: 1.8rem;
+  }
+
+  .result-title {
+    font-size: 1.3rem;
+  }
+
+  .result-details-card {
+    padding: 1.15rem 1rem;
+    gap: 0.8rem;
+    border-radius: 16px;
+    width: 100%;
+  }
+
+  .detail-row {
+    font-size: 0.78rem;
+  }
+
+  .footer-text {
+    margin-top: auto;
+    padding-top: 0.75rem;
+    font-size: 0.68rem;
+  }
+}

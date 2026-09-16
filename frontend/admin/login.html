@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Login | E-Absensi Kementerian HAM</title>
+  <!-- Favicon Logo Kemenham -->
+  <link rel="icon" type="image/png" href="../img/logo-kemenham.png">
+  <link rel="shortcut icon" type="image/png" href="../img/logo-kemenham.png">
+  <link rel="stylesheet" href="../css/mahasiswa.css">
+  <style>
+    :root {
+      --primary-dark: #091a36;
+      --banner-bg: #0c2447;
+      --body-bg: #f4f6f9;
+      --card-bg: #ffffff;
+      --accent: #e09b12;
+      --accent-dark: #b87c09;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --font: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background-color: var(--body-bg);
+      background-image: radial-gradient(at 100% 100%, rgba(224, 155, 18, 0.05) 0px, transparent 50%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* Split Screen Container */
+    .split-container {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* Left Side: Brand Banner */
+    .brand-side {
+      flex: 1.1;
+      color: #ffffff;
+      padding: 4rem 5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      border-right: 3px solid var(--accent);
+      background: 
+        radial-gradient(ellipse 700px 380px at 15% 20%, rgba(26, 86, 142, 0.5) 0%, transparent 65%),
+        radial-gradient(ellipse 550px 300px at 85% 80%, rgba(224, 155, 18, 0.15) 0%, transparent 60%),
+        linear-gradient(175deg, #07172e 0%, #051122 100%);
+      overflow: hidden;
+    }
+
+    .brand-side::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 100%;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320' preserveAspectRatio='none'%3E%3Cpath fill='none' stroke='rgba(56,189,248,0.14)' stroke-width='1.5' d='M0,224L60,208C120,192,240,160,360,170.7C480,181,600,235,720,240C840,245,960,203,1080,176C1200,149,1320,139,1380,133.3L1440,128'/%3E%3Cpath fill='none' stroke='rgba(224,155,18,0.2)' stroke-width='1.5' d='M0,256L60,245.3C120,235,240,213,360,192C480,171,600,149,720,165.3C840,181,960,235,1080,245.3C1200,256,1320,224,1380,208L1440,192'/%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: bottom;
+      opacity: 0.95;
+    }
+
+    .brand-logo-section {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .brand-logo-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1d4ed8, #0f172a);
+      border: 1px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: var(--accent);
+      font-size: 1.1rem;
+      box-shadow: 0 0 15px rgba(224, 155, 18, 0.3);
+    }
+
+    .brand-logo-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-logo-title {
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .brand-logo-subtitle {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .brand-main-hero {
+      margin: 4rem 0;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: 1px solid rgba(224, 155, 18, 0.2);
+      padding: 0.25rem 0.65rem;
+      border-radius: 20px;
+      background-color: rgba(224, 155, 18, 0.05);
+      margin-bottom: 1rem;
+    }
+
+    .brand-main-hero h1 {
+      font-size: 2.6rem;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -1px;
+      margin-bottom: 1.5rem;
+    }
+
+    .brand-main-hero h1 span {
+      color: var(--accent);
+    }
+
+    .brand-main-hero p {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      line-height: 1.6;
+      max-width: 480px;
+    }
+
+    .features-list {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .feature-item-box {
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 0.85rem 1.25rem;
+      min-width: 140px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .feature-icon {
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+
+    .feature-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .feature-desc {
+      font-size: 0.6rem;
+      color: #94a3b8;
+    }
+
+    /* Right Side: Form Side */
+    .form-side {
+      flex: 0.9;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem;
+      position: relative;
+      background-color: #f8fafc;
+      background-image: 
+        radial-gradient(circle 420px at 90% 12%, rgba(186, 230, 253, 0.5) 0%, transparent 70%),
+        radial-gradient(circle 480px at 92% 88%, rgba(254, 243, 199, 0.65) 0%, transparent 70%),
+        radial-gradient(circle 350px at 8% 92%, rgba(224, 242, 254, 0.45) 0%, transparent 70%);
+    }
+
+    .login-card-wrapper {
+      width: 100%;
+      max-width: 420px;
+      background-color: var(--card-bg);
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 16px -6px rgba(0, 0, 0, 0.03);
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-card-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .welcome-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--accent-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .login-card-header h2 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
+    }
+
+    .login-card-header p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .form-group-custom {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-group-custom label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .input-icon-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .input-icon-wrapper input {
+      width: 100%;
+      background-color: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 0.65rem 1rem 0.65rem 2.2rem;
+      color: var(--text-main);
+      font-family: var(--font);
+      font-size: 0.8rem;
+      transition: all 0.3s;
+    }
+
+    .input-icon-wrapper input:focus {
+      outline: none;
+      background-color: #ffffff;
+      border-color: var(--accent);
+    }
+
+    .input-icon-wrapper::before {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.8rem;
+      opacity: 0.5;
+    }
+
+    .input-icon-wrapper.username-icon::before { content: "👤"; }
+    .input-icon-wrapper.password-icon::before { content: "🔒"; }
+
+    .btn-pwd-toggle {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      font-size: 0.8rem;
+      cursor: pointer;
+      opacity: 0.5;
+    }
+
+    .options-row-form {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .options-row-form a {
+      color: var(--accent-dark);
+      text-decoration: none;
+    }
+
+    .options-row-form a:hover {
+      text-decoration: underline;
+    }
+
+    .btn-action-yellow {
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #0f172a;
+      border: none;
+      font-family: var(--font);
+      font-weight: 800;
+      padding: 0.75rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 12px rgba(224, 155, 18, 0.15);
+      transition: all 0.3s;
+      width: 100%;
+    }
+
+    .btn-action-yellow:hover {
+      opacity: 0.95;
+      box-shadow: 0 6px 16px rgba(224, 155, 18, 0.25);
+    }
+
+    .divider-text {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .divider-text::before, .divider-text::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .divider-text:not(:empty)::before { margin-right: .75em; }
+    .divider-text:not(:empty)::after { margin-left: .75em; }
+
+    .info-footer-card {
+      background-color: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 0.5rem;
+      line-height: 1.3;
+    }
+
+    .form-side-footer {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+
+    /* Responsive Android & Mobile Optimization */
+    @media (max-width: 820px) {
+      .split-container {
+        flex-direction: column;
+        min-height: 100dvh;
+      }
+      .brand-side {
+        display: none;
+      }
+      .form-side {
+        flex: 1;
+        padding: 1.5rem 1rem;
+        justify-content: center;
+        width: 100%;
+      }
+      .login-card-wrapper {
+        padding: 1.75rem 1.25rem;
+        max-width: 100%;
+        border-radius: 18px;
+        gap: 1.25rem;
+      }
+      .login-card-header h2 {
+        font-size: 1.25rem;
+      }
+      .btn-action-yellow {
+        min-height: 48px;
+      }
+    }
+  </style>
+  <script src="../js/api.js"></script>
+</head>
+<body>
+
+  <div class="split-container">
+    
+    <!-- Left Side: Brand -->
+    <div class="brand-side">
+      <div class="brand-logo-section">
+        <img src="../img/logo-kemenham.png" alt="Logo Kemenham" style="width: 44px; height: 44px; object-fit: contain;">
+        <div class="brand-logo-text">
+          <span class="brand-logo-title">KEMENTRIAN HAK ASASI MANUSIA RI</span>
+          <span class="brand-logo-subtitle">WILAYAH KERJA SULAWESI TENGGARA</span>
+        </div>
+      </div>
+
+      <div class="brand-main-hero">
+        <span class="hero-tag">Sistem Kehadiran Mahasiswa Magang</span>
+        <h1>Satu pintu untuk<br>kehadiran <span>E-Absensi.</span></h1>
+        <p>Kelola kehadiran, data kampus asal, dan rekap mahasiswa magang di lingkungan Kementerian HAM secara real-time, akurat, dan mudah diaudit.</p>
+      </div>
+
+      <div class="features-list">
+        <div class="feature-item-box">
+          <span class="feature-icon">✓</span>
+          <span class="feature-title">Presensi Real-time</span>
+          <span class="feature-desc">Kehadiran tercatat & terverifikasi otomatis.</span>
+        </div>
+        <div class="feature-item-box">
+          <span class="feature-icon">🏫</span>
+          <span class="feature-title">Multi Kampus</span>
+          <span class="feature-desc">Kelola seluruh kampus asal magang.</span>
+        </div>
+        <div class="feature-item-box">
+          <span class="feature-icon">🛡️</span>
+          <span class="feature-title">Aman & Tercatat</span>
+          <span class="feature-desc">Riwayat rekap terjaga & terenkripsi.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Side: Form -->
+    <div class="form-side">
+      <div class="login-card-wrapper">
+        <div class="login-card-header">
+          <span class="welcome-label">Selamat Datang Kembali</span>
+          <h2>Masuk ke E-Absensi</h2>
+          <p>Gunakan akun resmi yang telah terdaftar untuk mengakses sistem kehadiran mahasiswa magang.</p>
+        </div>
+
+        <form id="login-form" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div class="form-group-custom">
+            <label for="username">Username</label>
+            <div class="input-icon-wrapper username-icon">
+              <input type="text" id="username" placeholder="Masukkan username" required autocomplete="username">
+            </div>
+          </div>
+
+          <div class="form-group-custom">
+            <label for="password">Password</label>
+            <div class="input-icon-wrapper password-icon">
+              <input type="password" id="password" placeholder="Masukkan password" required autocomplete="current-password">
+              <button type="button" class="btn-pwd-toggle" id="btn-toggle-pwd">👁️</button>
+            </div>
+          </div>
+
+          <div class="options-row-form">
+            <label style="display: flex; align-items: center; gap: 0.35rem; cursor: pointer;">
+              <input type="checkbox" style="accent-color: var(--accent-dark);"> Ingat saya
+            </label>
+            <a href="#" onclick="alert('Hubungi admin IT di Divisi TI untuk reset password.')">Lupa password?</a>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem;">
+            <button type="submit" class="btn-action-yellow">Masuk &rarr;</button>
+            
+            <div class="divider-text">Akses Terbatas</div>
+            
+            <!-- Button to Student Absensi -->
+            <button type="button" class="btn-action-yellow" id="btn-mahasiswa-absensi" style="background: #ffffff; border: 1px solid var(--border-color); color: var(--text-main); box-shadow: none;">
+              📷 Mulai Absensi &rarr;
+            </button>
+          </div>
+        </form>
+
+        <div class="info-footer-card">
+          <span style="font-size: 1.1rem;">⚠️</span>
+          <span>Akun hanya untuk pengguna terdaftar di lingkungan Kementerian HAM. Hubungi <strong>Divisi TI</strong> bila mengalami kendala akses.</span>
+        </div>
+      </div>
+
+      <div class="form-side-footer">
+        &copy; 2026 KEMENTRIAN HAK ASASI MANUSIA RI &bull; WILAYAH KERJA SULAWESI TENGGARA
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Toggle Password Visibility
+    const pwdInput = document.getElementById('password');
+    const pwdToggle = document.getElementById('btn-toggle-pwd');
+    pwdToggle.addEventListener('click', () => {
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        pwdToggle.textContent = '🙈';
+      } else {
+        pwdInput.type = 'password';
+        pwdToggle.textContent = '👁️';
+      }
+    });
+
+    // Form Login Submit
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await api.post('/auth/login', { username, password });
+        if (res.success) {
+          window.location.href = '/admin/index.html';
+        }
+      } catch (err) {
+        alert(err.message || 'Login gagal.');
+      }
+    });
+
+    // Redirect to Student Face Recognition Page
+    document.getElementById('btn-mahasiswa-absensi').addEventListener('click', () => {
+      window.location.href = '/index.html';
+    });
+  </script>
+
+</body>
+</html>

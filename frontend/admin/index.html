@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Dashboard Admin | E-Absensi Kemenham</title>
+  <!-- Favicon Logo Kemenham -->
+  <link rel="icon" type="image/png" href="../img/logo-kemenham.png">
+  <link rel="shortcut icon" type="image/png" href="../img/logo-kemenham.png">
+  <link rel="stylesheet" href="../css/admin.css">
+  <!-- Load Leaflet.js (Map interaktif untuk Geofencing) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Load Chart.js dari CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Load Face-API.js Vladmandic Fork secara Lokal -->
+  <script src="../js/face-api.js"></script>
+  <!-- Load ExcelJS untuk ekspor file Excel asli dengan Logo -->
+  <script src="../js/exceljs.min.js"></script>
+  <!-- Load API Helper & JS logic -->
+  <script defer src="../js/api.js"></script>
+  <script defer src="../js/admin.js"></script>
+</head>
+<body>
+
+  <!-- 1. TOP NAVBAR -->
+  <nav class="admin-navbar">
+    <div class="nav-brand">
+      <img id="nav-logo-btn" src="../img/logo-kemenham.png" alt="Logo Kemenham" style="width: 36px; height: 36px; object-fit: contain;" title="Kementerian HAM RI">
+      <div class="brand-text">
+        <span class="brand-title">KEMENTRIAN HAK ASASI MANUSIA RI</span>
+        <span class="brand-subtitle">WILAYAH KERJA SULAWESI TENGGARA</span>
+      </div>
+    </div>
+
+    <div class="nav-menu" id="nav-menu">
+      <button class="nav-item-btn active" data-tab="dashboard">Dashboard</button>
+      <button class="nav-item-btn" data-tab="kampus">Kelola Kampus</button>
+      <button class="nav-item-btn" data-tab="mahasiswa">Kelola Mahasiswa</button>
+      <button class="nav-item-btn" data-tab="rekap">Rekap Absensi</button>
+      <button class="nav-item-btn" data-tab="pengaturan">Pengaturan</button>
+      <button id="btn-logout-mobile" class="nav-item-btn nav-item-btn-logout-mobile" style="display: none;">🚪 Keluar</button>
+    </div>
+
+    <div class="nav-user-profile">
+      <div class="user-profile-badge" title="Akun Pengelola">
+        <div class="user-avatar-circle" id="admin-avatar-display">A</div>
+        <div class="user-info-text">
+          <span class="user-name-label" id="admin-user-display">Admin Sistem</span>
+          <span class="user-role-label">DIVISI TI</span>
+        </div>
+      </div>
+      <button id="btn-logout" class="btn-logout" title="Keluar dari panel">
+        <span style="font-size: 0.85rem;">🚪</span>
+        <span>Keluar</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ==================== TAB CONTENT AREAS ==================== -->
+
+  <!-- 1. TAB DASHBOARD -->
+  <div id="tab-dashboard-container">
+    <header class="header-banner">
+      <div class="banner-breadcrumbs">Dashboard &gt; Ringkasan Hari Ini</div>
+      <div class="banner-title-section">
+        <div class="banner-title-group">
+          <h2>Selamat datang, Admin 👋</h2>
+          <p>Pantau kehadiran dan kelola data mahasiswa magang dengan mudah dari satu dashboard.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem;">
+          <div class="banner-date-badge" style="background: rgba(224, 155, 18, 0.12); border-color: rgba(224, 155, 18, 0.35); color: #fbbf24; font-family: monospace, sans-serif; font-size: 0.85rem; font-weight: 700;">
+            <span style="font-size: 0.9rem;">⏰</span>
+            <span id="dashboard-clock-text">00:00:00 WITA</span>
+          </div>
+          <div class="banner-date-badge">
+            <span>📅</span>
+            <span id="dashboard-date-text">Sabtu, 22 Agustus 2026</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content-body-wrapper">
+      <div class="dashboard-main-grid">
+        <!-- Left Side: Stats & Chart -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="stats-cards-row" style="grid-template-columns: 1fr 1fr;">
+            <div class="stats-card-premium">
+              <div class="stats-card-left">
+                <span class="stats-card-num" id="stat-hadir">0</span>
+                <span class="stats-card-label">Hadir Hari Ini</span>
+                <span class="stats-card-subtext" style="color: var(--success); font-weight: 700;">▲ 0% <span style="color: var(--text-muted); font-weight: normal; font-size: 0.65rem;">dari total mahasiswa</span></span>
+              </div>
+              <div class="stats-card-icon-wrapper blue">✓</div>
+            </div>
+            
+            <div class="stats-card-premium">
+              <div class="stats-card-left">
+                <span class="stats-card-num" id="stat-mahasiswa">0</span>
+                <span class="stats-card-label">Total Mahasiswa Magang</span>
+                <span class="stats-card-subtext">Terdaftar aktif di sistem</span>
+              </div>
+              <div class="stats-card-icon-wrapper yellow">👥</div>
+            </div>
+          </div>
+
+          <div class="chart-card-premium">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h3 class="sidebar-title" style="border: none; padding: 0;">Grafik Kehadiran Mingguan</h3>
+              <div class="chart-legend-indicator">
+                <span class="legend-dot hadir">Hadir</span>
+                <span class="legend-dot target">Target</span>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="weeklyChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Quick Action & Sidebar -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="quick-actions-card">
+            <span class="quick-actions-title">Aksi Cepat</span>
+            <span class="quick-actions-desc">Percepat pekerjaan administratif harian dari satu tempat.</span>
+            <div class="quick-actions-btn-group">
+              <button class="btn-primary" onclick="triggerQuickAction('tambah-kampus')">+ Tambah Kampus</button>
+              <button class="btn-primary" onclick="triggerQuickAction('tambah-mahasiswa')">+ Tambah Mahasiswa</button>
+              <button class="btn-secondary" onclick="triggerQuickAction('ekspor-rekap')" style="background-color: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); color: #ffffff;">Ekspor Rekap</button>
+            </div>
+          </div>
+
+          <div class="right-sidebar-card">
+            <span class="sidebar-title">Kampus Teraktif</span>
+            <div class="sidebar-item-list" id="dashboard-active-campuses">
+              <!-- Render Dinamis -->
+              <div class="sidebar-row-item">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <span>🏫</span>
+                  <div>
+                    <strong style="display: block; font-size: 0.75rem;">Universitas Bakrie</strong>
+                    <small style="color: var(--text-muted); font-size: 0.65rem;">Jakarta Selatan</small>
+                  </div>
+                </div>
+                <span class="pill-badge status-aktif" style="font-size: 0.6rem; padding: 0.15rem 0.45rem;">Aktif</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 2. TAB KAMPUS -->
+  <div id="tab-kampus-container" style="display: none;">
+    <header class="header-banner">
+      <div class="banner-breadcrumbs">Kelola Kampus &gt; Daftar Kampus Asal</div>
+      <div class="banner-title-section">
+        <div class="banner-title-group">
+          <h2>Daftar Kampus Asal Mahasiswa</h2>
+          <p>Kelola data instansi/kampus asal mahasiswa magang yang terdaftar dalam sistem E-Absensi.</p>
+        </div>
+        <button id="btn-tambah-kampus" class="btn-primary" style="font-size: 0.85rem; padding: 0.7rem 1.5rem;">+ Tambah Kampus</button>
+      </div>
+    </header>
+
+    <main class="content-body-wrapper">
+      <!-- Kampus Stats Row -->
+      <div class="stats-cards-row">
+        <div class="stats-card-premium">
+          <div class="stats-card-left">
+            <span class="stats-card-num" id="stat-kps-total">0</span>
+            <span class="stats-card-label">Total Kampus Terdaftar</span>
+          </div>
+          <div class="stats-card-icon-wrapper blue">🏫</div>
+        </div>
+        
+        <div class="stats-card-premium">
+          <div class="stats-card-left">
+            <span class="stats-card-num" id="stat-kps-aktif">0</span>
+            <span class="stats-card-label">Kampus Aktif</span>
+          </div>
+          <div class="stats-card-icon-wrapper green">✓</div>
+        </div>
+
+        <div class="stats-card-premium">
+          <div class="stats-card-left">
+            <span class="stats-card-num" id="stat-kps-mhs">0</span>
+            <span class="stats-card-label">Mahasiswa Terhubung</span>
+          </div>
+          <div class="stats-card-icon-wrapper yellow">👥</div>
+        </div>
+      </div>
+
+      <!-- Filter Row Kampus -->
+      <div class="filter-search-container">
+        <div class="search-input-wrapper" style="max-width: 400px;">
+          <input type="text" id="search-kampus" placeholder="Cari nama kampus atau alamat...">
+        </div>
+      </div>
+
+      <!-- Table Card Kampus -->
+      <div class="premium-table-card">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px;">No</th>
+                <th>Nama Kampus / Instansi</th>
+                <th>Alamat</th>
+                <th style="text-align: center;">Jumlah Mahasiswa</th>
+                <th style="text-align: center; width: 110px;">Status</th>
+                <th style="width: 70px; text-align: center;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="table-kampus-body">
+              <!-- Render Dinamis -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="table-footer-pagination">
+          <span class="pagination-info" id="kampus-pagination-info">Menampilkan 0 dari 0 kampus</span>
+          <div class="pagination-btn-group" id="kampus-pagination-buttons">
+            <button class="page-nav-btn active">1</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 3. TAB MAHASISWA -->
+  <div id="tab-mahasiswa-container" style="display: none;">
+    <header class="header-banner">
+      <div class="banner-breadcrumbs">Kelola Mahasiswa &gt; Daftar Mahasiswa</div>
+      <div class="banner-title-section">
+        <div class="banner-title-group">
+          <h2>Daftar Mahasiswa Magang / Praktikan</h2>
+          <p>Kelola data, angkatan, kategori program, status aktif, dan profil kehadiran mahasiswa.</p>
+        </div>
+        <button id="btn-tambah-mahasiswa" class="btn-primary" style="font-size: 0.85rem; padding: 0.7rem 1.5rem;">+ Tambah Mahasiswa</button>
+      </div>
+    </header>
+
+    <main class="content-body-wrapper">
+      <!-- Filter Row Mahasiswa -->
+      <div class="filter-search-container">
+        <div class="search-input-wrapper" style="max-width: 280px;">
+          <input type="text" id="search-mahasiswa" placeholder="Cari nama atau NIM...">
+        </div>
+        
+        <div class="filter-controls-wrapper">
+          <select id="filter-mhs-kampus" class="filter-select-input">
+            <option value="">Semua Kampus</option>
+          </select>
+
+          <select id="filter-mhs-angkatan" class="filter-select-input">
+            <option value="">Semua Angkatan</option>
+          </select>
+
+          <select id="filter-mhs-program" class="filter-select-input">
+            <option value="">Semua Program</option>
+            <option value="Magang">Magang</option>
+            <option value="KKN">KKN</option>
+            <option value="PKL">PKL</option>
+            <option value="Penelitian">Penelitian</option>
+          </select>
+
+          <select id="filter-mhs-status" class="filter-select-input">
+            <option value="">Semua Status</option>
+            <option value="1">Aktif</option>
+            <option value="0">Nonaktif</option>
+          </select>
+
+          <button id="btn-reset-mhs-filter" class="btn-reset-filter" title="Reset Filter">
+            🔄 Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Table Card Mahasiswa -->
+      <div class="premium-table-card">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px;">No</th>
+                <th>Nama Mahasiswa</th>
+                <th>Kampus Asal</th>
+                <th style="text-align: center;">Angkatan</th>
+                <th style="text-align: center;">Program</th>
+                <th style="text-align: center;">Status</th>
+                <th style="width: 70px; text-align: center;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="table-mahasiswa-body">
+              <!-- Render Dinamis -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="table-footer-pagination">
+          <span class="pagination-info" id="mahasiswa-pagination-info">Menampilkan 0 dari 0 mahasiswa</span>
+          <div class="pagination-btn-group" id="mahasiswa-pagination-buttons">
+            <button class="page-nav-btn active">1</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 4. TAB REKAP ABSENSI -->
+  <div id="tab-rekap-container" style="display: none;">
+    <header class="header-banner">
+      <div class="banner-breadcrumbs">Rekap Absensi &gt; Rekapitulasi Kehadiran</div>
+      <div class="banner-title-section">
+        <div class="banner-title-group">
+          <h2>Rekapitulasi Kehadiran Mahasiswa</h2>
+          <p>Pantau, verifikasi, dan ekspor data kehadiran mahasiswa magang secara akurat dan real-time.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+          <button id="btn-export-csv" class="btn-secondary" style="font-weight: 700; font-size: 0.75rem; padding: 0.7rem 1.25rem;">📤 Export CSV</button>
+          <button id="btn-manual-absen" class="btn-primary" style="font-size: 0.75rem; padding: 0.7rem 1.25rem;">+ Input Manual Kehadiran</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="content-body-wrapper">
+      <!-- Rekap Stats Row -->
+      <div class="rekap-stats-cards-row">
+        <div class="stats-card-premium">
+          <div class="stats-card-left">
+            <span class="stats-card-num" id="rekap-stat-tepat">0</span>
+            <span class="stats-card-label">Hadir Tepat Waktu</span>
+          </div>
+          <div class="stats-card-icon-wrapper green">✓</div>
+        </div>
+        
+        <div class="stats-card-premium">
+          <div class="stats-card-left">
+            <span class="stats-card-num" id="rekap-stat-lambat">0</span>
+            <span class="stats-card-label">Terlambat</span>
+          </div>
+          <div class="stats-card-icon-wrapper yellow">⚠️</div>
+        </div>
+
+        <div class="stats-card-premium">
+          <div class="stats-card-left">
+            <span class="stats-card-num" id="rekap-stat-alpha">0</span>
+            <span class="stats-card-label">Alpha / Tidak Hadir</span>
+          </div>
+          <div class="stats-card-icon-wrapper red">✗</div>
+        </div>
+
+        <div class="stats-card-premium">
+          <div class="stats-card-left">
+            <span class="stats-card-num" id="rekap-stat-total">0</span>
+            <span class="stats-card-label">Total Data Terdeteksi</span>
+          </div>
+          <div class="stats-card-icon-wrapper blue">📊</div>
+        </div>
+      </div>
+
+      <!-- Filters Panel (Rentang Tanggal, Kampus, Status) -->
+      <div class="filter-search-container" style="align-items: flex-end; padding: 1.25rem 1.5rem; justify-content: flex-start; gap: 1rem; flex-wrap: wrap;">
+        <div class="modal-form-group" style="min-width: 140px; flex: 1;">
+          <label for="filter-tanggal-mulai" style="color: var(--text-main); font-weight: 700; font-size: 0.75rem;">📅 Dari Tanggal</label>
+          <input type="date" id="filter-tanggal-mulai" class="modal-input-field" style="background-color: #f8fafc; border-color: var(--border-color); color: var(--text-main);">
+        </div>
+        <div class="modal-form-group" style="min-width: 140px; flex: 1;">
+          <label for="filter-tanggal-selesai" style="color: var(--text-main); font-weight: 700; font-size: 0.75rem;">📅 Sampai Tanggal</label>
+          <input type="date" id="filter-tanggal-selesai" class="modal-input-field" style="background-color: #f8fafc; border-color: var(--border-color); color: var(--text-main);">
+        </div>
+        <div class="modal-form-group" style="min-width: 170px; flex: 1.2;">
+          <label for="filter-kampus" style="color: var(--text-main); font-weight: 700; font-size: 0.75rem;">🏫 Kampus Asal</label>
+          <select id="filter-kampus" class="modal-input-field" style="background-color: #f8fafc; border-color: var(--border-color); color: var(--text-main);">
+            <option value="">Semua Kampus</option>
+          </select>
+        </div>
+        <div class="modal-form-group" style="min-width: 140px; flex: 1;">
+          <label for="filter-status" style="color: var(--text-main); font-weight: 700; font-size: 0.75rem;">⚡ Status</label>
+          <select id="filter-status" class="modal-input-field" style="background-color: #f8fafc; border-color: var(--border-color); color: var(--text-main);">
+            <option value="">Semua Status</option>
+            <option value="hadir">HADIR</option>
+            <option value="terlambat">TERLAMBAT</option>
+            <option value="izin">IZIN</option>
+            <option value="sakit">SAKIT</option>
+            <option value="alpha">ALPHA</option>
+          </select>
+        </div>
+        <button id="btn-reset-filter" class="btn-secondary" style="height: 38px; padding: 0 1rem;">🔍 Reset</button>
+      </div>
+
+      <!-- Table Card -->
+      <div class="premium-table-card">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 60px;">No</th>
+                <th>Nama Mahasiswa</th>
+                <th>Kampus Asal</th>
+                <th>Tanggal</th>
+                <th>Waktu Datang</th>
+                <th>Status</th>
+                <th>Koordinat GPS</th>
+              </tr>
+            </thead>
+            <tbody id="table-rekap-body">
+              <!-- Render Dinamis -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="table-footer-pagination">
+          <span class="pagination-info" id="rekap-pagination-info">Menampilkan 0 dari 0 catatan</span>
+          <div class="pagination-btn-group" id="rekap-pagination-buttons">
+            <button class="page-nav-btn active">1</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 5. TAB PENGATURAN -->
+  <div id="tab-pengaturan-container" style="display: none;">
+    <header class="header-banner">
+      <div class="banner-breadcrumbs">Pengaturan &gt; Wilayah Kantor</div>
+      <div class="banner-title-section">
+        <div class="banner-title-group">
+          <h2>Pengaturan Sistem</h2>
+          <p>Kelola konfigurasi teknis E-Absensi, termasuk validasi lokasi geofencing untuk presensi mahasiswa magang.</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="content-body-wrapper">
+      <div class="settings-main-grid">
+        <!-- Left Side: Settings Sidebar & Summary -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="right-sidebar-card" style="padding: 1rem 0.5rem;">
+            <div class="settings-menu-list">
+              <button class="settings-menu-item active" data-settings-tab="wilayah">
+                <span>📍</span> Wilayah Kantor
+              </button>
+              <button class="settings-menu-item" data-settings-tab="akun">
+                <span>👤</span> Akun & Admin
+              </button>
+              <button class="settings-menu-item" data-settings-tab="keamanan">
+                <span>⏰</span> Jadwal & Keamanan AI
+              </button>
+              <button class="settings-menu-item" data-settings-tab="log">
+                <span>📄</span> Log Aktivitas
+              </button>
+            </div>
+          </div>
+
+          <div class="config-summary-card">
+            <div class="config-summary-header">
+              <span class="config-summary-badge">⚡</span>
+              <span class="config-summary-main-title">Status Konfigurasi Sistem</span>
+            </div>
+            <div class="config-summary-list">
+              <div class="config-summary-item">
+                <span class="status-indicator-dot success"></span>
+                <div class="config-summary-text-group">
+                  <span class="config-summary-text-title">Geofencing & GPS Aktif</span>
+                  <span class="config-summary-text-val">Radius kantor otomatis divalidasi saat presensi.</span>
+                </div>
+              </div>
+              
+              <div class="config-summary-item">
+                <span class="status-indicator-dot gold"></span>
+                <div class="config-summary-text-group">
+                  <span class="config-summary-text-title">Jam Kerja Standar</span>
+                  <span class="config-summary-text-val" id="summary-work-hours">07:30 - 16:00 WITA (Batas: 08:00)</span>
+                </div>
+              </div>
+
+              <div class="config-summary-item">
+                <span class="status-indicator-dot info"></span>
+                <div class="config-summary-text-group">
+                  <span class="config-summary-text-title">Terakhir Diperbarui</span>
+                  <span class="config-summary-text-val" id="settings-last-updated">12 Agustus 2026 pukul 09:42 WITA</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Config Form (Dinamis Sub-Tabs) -->
+        <div class="right-sidebar-card" style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-main); min-height: 460px;">
+          
+          <!-- SUB-TAB 1: WILAYAH KANTOR -->
+          <div id="settings-content-wilayah" style="display: flex; flex-direction: column; gap: 1.25rem; width: 100%;">
+            <div class="settings-subtab-header-banner">
+              <div class="settings-subtab-icon-box">📍</div>
+              <div class="settings-subtab-title-group">
+                <strong style="font-size: 0.9rem; color: #0f172a;">Pengaturan Wilayah & Titik Kantor</strong>
+                <small style="color: var(--text-muted); font-size: 0.68rem;">Tentukan titik pusat koordinat kantor Kementerian HAM untuk validasi geofencing absensi mahasiswa magang.</small>
+              </div>
+            </div>
+
+            <!-- Helper Cepat Integrasi Google Maps & GPS -->
+            <div style="background-color: #f1f5f9; border: 1px solid var(--border-color); border-radius: 12px; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.6rem;">
+              <label style="font-size: 0.75rem; font-weight: 700; color: #0f172a;">🗺️ Cari atau Tempel Link / Koordinat Google Maps:</label>
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <input type="text" id="input-gmaps-link" class="modal-input-field" style="flex: 1; min-width: 200px; background-color: #ffffff; border: 1px solid var(--border-color); color: #0f172a; font-size: 0.78rem;" placeholder="Paste link Google Maps atau koordinat (contoh: -3.97395, 122.51060)...">
+                <button type="button" id="btn-parse-gmaps" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700;">📌 Terapkan</button>
+                <button type="button" id="btn-get-current-gps" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; background-color: #ffffff; color: #0f172a; border-color: var(--border-color);">📍 Lokasi Saya Sekarang</button>
+                <button type="button" id="btn-open-gmaps" class="btn-secondary" style="padding: 0.5rem 0.85rem; font-size: 0.75rem; font-weight: 700; background-color: #ffffff; color: #1d4ed8; border-color: #bfdbfe;">↗ Buka Google Maps</button>
+              </div>
+              <small style="font-size: 0.68rem; color: var(--text-muted);">💡 <em>Tips: Buka Google Maps, klik kanan lokasi kantor &rarr; pilih koordinat (contoh: -3.97395, 122.51060) lalu paste di atas, atau klik tombol "Lokasi Saya Sekarang".</em></small>
+            </div>
+
+            <!-- Container Peta Interaktif Leaflet (Google Maps Mode) -->
+            <div style="position: relative; width: 100%;">
+              <div id="map" style="width: 100%; height: 260px; border-radius: 12px; border: 1px solid var(--border-color); z-index: 1;"></div>
+              <span class="map-label-radius" id="map-radius-display" style="position: absolute; z-index: 1000; top: 10px; right: 10px; background: rgba(15, 27, 45, 0.85); color: #ffffff; padding: 0.3rem 0.75rem; border-radius: 8px; font-size: 0.72rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 4px 10px rgba(0,0,0,0.3);">Radius: 100m</span>
+            </div>
+
+            <form id="form-settings" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 0.25rem;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="modal-form-group">
+                  <label for="set-lat" style="color: #0f172a; font-weight: 700;">Latitude Kantor</label>
+                  <input type="number" step="any" id="set-lat" class="modal-input-field" style="background-color: #f8fafc; border-color: var(--border-color); color: #0f172a; font-weight: 600;" required>
+                </div>
+                <div class="modal-form-group">
+                  <label for="set-lng" style="color: #0f172a; font-weight: 700;">Longitude Kantor</label>
+                  <input type="number" step="any" id="set-lng" class="modal-input-field" style="background-color: #f8fafc; border-color: var(--border-color); color: #0f172a; font-weight: 600;" required>
+                </div>
+              </div>
+
+              <div class="modal-form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <label for="set-radius" style="color: #0f172a; font-weight: 700;">Radius Toleransi Absensi (Meter)</label>
+                  <span style="font-size: 0.7rem; color: var(--text-muted);">(Jarak maksimal mahasiswa dari kantor)</span>
+                </div>
+                <input type="number" id="set-radius" class="modal-input-field" style="background-color: #f8fafc; border-color: var(--border-color); color: #0f172a; font-weight: 600;" min="10" max="500000" required>
+              </div>
+
+              <button type="submit" class="btn-primary" style="align-self: flex-end; padding: 0.65rem 1.75rem; font-size: 0.85rem; margin-top: 0.25rem;">
+                ✓ Simpan Titik & Radius Kantor
+              </button>
+            </form>
+          </div>
+
+          <!-- SUB-TAB 2: AKUN & ADMIN -->
+          <div id="settings-content-akun" style="display: none; flex-direction: column; gap: 1.25rem; width: 100%;">
+            <div class="settings-subtab-header-banner">
+              <div class="settings-subtab-icon-box">👤</div>
+              <div class="settings-subtab-title-group">
+                <strong style="font-size: 0.9rem; color: #0f172a;">Pengaturan Username & Password Admin</strong>
+                <small style="color: var(--text-muted); font-size: 0.68rem;">Perbarui username dan kata sandi akun pengelola E-Absensi secara berkala demi keamanan data sistem.</small>
+              </div>
+            </div>
+
+            <form id="form-change-password" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 0.25rem;">
+              <div class="modal-form-group">
+                <label for="acc-username" style="color: #0f172a; font-weight: 700;">Username Admin</label>
+                <input type="text" id="acc-username" class="modal-input-field" style="background-color: #f8fafc; border: 1px solid var(--border-color); color: #0f172a; font-weight: 600;" placeholder="Masukkan username admin" required autocomplete="username">
+              </div>
+
+              <div class="modal-form-group">
+                <label for="pwd-old" style="color: #0f172a; font-weight: 700;">Password Lama / Saat Ini (Opsional jika hanya ubah username)</label>
+                <div style="position: relative; width: 100%;">
+                  <input type="password" id="pwd-old" class="modal-input-field" style="background-color: #f8fafc; border: 1px solid var(--border-color); color: #0f172a; font-weight: 600; padding-right: 2.5rem;" placeholder="Wajib diisi hanya jika ingin mengubah password" autocomplete="current-password">
+                  <button type="button" class="btn-pwd-eye-toggle" onclick="togglePasswordVisibility('pwd-old', this)">👁️</button>
+                </div>
+              </div>
+              
+              <div class="modal-form-group">
+                <label for="pwd-new" style="color: #0f172a; font-weight: 700;">Password Baru (Kosongkan Jika Tidak Diubah)</label>
+                <div style="position: relative; width: 100%;">
+                  <input type="password" id="pwd-new" class="modal-input-field" style="background-color: #f8fafc; border: 1px solid var(--border-color); color: #0f172a; font-weight: 600; padding-right: 2.5rem;" placeholder="Password baru (minimal 6 karakter)" autocomplete="new-password">
+                  <button type="button" class="btn-pwd-eye-toggle" onclick="togglePasswordVisibility('pwd-new', this)">👁️</button>
+                </div>
+              </div>
+
+              <div class="modal-form-group">
+                <label for="pwd-confirm" style="color: #0f172a; font-weight: 700;">Konfirmasi Password Baru</label>
+                <div style="position: relative; width: 100%;">
+                  <input type="password" id="pwd-confirm" class="modal-input-field" style="background-color: #f8fafc; border: 1px solid var(--border-color); color: #0f172a; font-weight: 600; padding-right: 2.5rem;" placeholder="Ulangi password baru jika diubah" autocomplete="new-password">
+                  <button type="button" class="btn-pwd-eye-toggle" onclick="togglePasswordVisibility('pwd-confirm', this)">👁️</button>
+                </div>
+              </div>
+
+              <button type="submit" class="btn-primary" style="align-self: flex-end; padding: 0.7rem 1.75rem; font-size: 0.8rem; margin-top: 0.5rem;">
+                🔒 Simpan Perubahan Akun
+              </button>
+            </form>
+
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 0.5rem 0;">
+
+            <!-- Kelola Daftar Akun Admin -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                  <strong style="font-size: 0.88rem; color: #0f172a;">Daftar Akun Admin Sistem</strong>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">Kelola daftar akun pengelola yang diberikan akses ke panel admin E-Absensi.</div>
+                </div>
+                <button type="button" class="btn-primary" onclick="openTambahAdminModal()" style="padding: 0.45rem 0.85rem; font-size: 0.75rem; font-weight: 700;">
+                  + Tambah Admin Baru
+                </button>
+              </div>
+
+              <div class="table-responsive" style="border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden;">
+                <table class="data-table" style="width: 100%; margin: 0; font-size: 0.8rem;">
+                  <thead>
+                    <tr>
+                      <th style="padding: 0.6rem 0.8rem; text-align: left;">ID</th>
+                      <th style="padding: 0.6rem 0.8rem; text-align: left;">Username</th>
+                      <th style="padding: 0.6rem 0.8rem; text-align: center; width: 120px;">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-admins-body">
+                    <!-- Populated by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-TAB 3: JADWAL & KEAMANAN AI -->
+          <div id="settings-content-keamanan" style="display: none; flex-direction: column; gap: 1.25rem; width: 100%;">
+            <div class="settings-subtab-header-banner">
+              <div class="settings-subtab-icon-box">⏰</div>
+              <div class="settings-subtab-title-group">
+                <strong style="font-size: 0.9rem; color: #0f172a;">Jadwal Presensi & Parameter Keamanan AI</strong>
+                <small style="color: var(--text-muted); font-size: 0.68rem;">Atur jam masuk/pulang mahasiswa serta tingkat keketatan deteksi biometrik wajah.</small>
+              </div>
+            </div>
+
+            <form id="form-settings-security" style="display: flex; flex-direction: column; gap: 1.25rem; margin-top: 0.25rem;">
+              
+              <!-- Pengaturan Jam Presensi Datang -->
+              <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 1.15rem 1.25rem; display: flex; flex-direction: column; gap: 0.85rem;">
+                <strong style="font-size: 0.82rem; color: #0f172a; display: flex; align-items: center; gap: 0.45rem;">
+                  <span>🕒</span> Pengaturan Waktu Datang & Batas Terlambat (WITA)
+                </strong>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                  <div class="modal-form-group">
+                    <label for="set-jam-masuk" style="color: #0f172a; font-weight: 700;">Jam Buka Presensi Datang</label>
+                    <input type="time" id="set-jam-masuk" class="modal-input-field" style="background-color: #ffffff; border: 1px solid var(--border-color); color: #0f172a; height: 38px; font-weight: 600;" value="07:30" required>
+                    <small style="color: var(--text-muted); font-size: 0.64rem;">Waktu awal mahasiswa boleh melakukan presensi.</small>
+                  </div>
+                  
+                  <div class="modal-form-group">
+                    <label for="set-jam-terlambat" style="color: #0f172a; font-weight: 700;">Batas Tepat Waktu (Terlambat)</label>
+                    <input type="time" id="set-jam-terlambat" class="modal-input-field" style="background-color: #ffffff; border: 1px solid var(--border-color); color: #0f172a; height: 38px; font-weight: 600;" value="08:00" required>
+                    <small style="color: var(--text-muted); font-size: 0.64rem;">Presensi lewat jam ini dihitung Terlambat.</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Parameter Biometrik AI -->
+              <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 1.15rem 1.25rem; display: flex; flex-direction: column; gap: 0.85rem;">
+                <strong style="font-size: 0.82rem; color: #0f172a; display: flex; align-items: center; gap: 0.45rem;">
+                  <span>🛡️</span> Parameter Biometrik AI Face Recognition
+                </strong>
+                <div class="modal-form-group">
+                  <label for="set-threshold" style="color: #0f172a; font-weight: 700;">Tingkat Strictness Pencocokan Wajah (Threshold)</label>
+                  <select id="set-threshold" class="modal-input-field" style="background-color: #ffffff; border: 1px solid var(--border-color); color: #0f172a; height: 38px; font-weight: 600;">
+                    <option value="0.40">Sangat Ketat (0.40) - Proteksi Ekstra</option>
+                    <option value="0.45" selected>Ketat (0.45) - Standar Direkomendasikan</option>
+                    <option value="0.50">Menengah (0.50) - Toleransi Ringan</option>
+                    <option value="0.55">Longgar (0.55) - Rentan False Match</option>
+                  </select>
+                  <small style="color: var(--text-muted); font-size: 0.68rem; line-height: 1.3;">
+                    Nilai threshold mengontrol tingkat toleransi kemiripan vektor wajah untuk mencegah kecurangan.
+                  </small>
+                </div>
+
+                <div class="modal-form-group">
+                  <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #0f172a; font-weight:700;">
+                    <input type="checkbox" checked disabled style="width: 14px; height: 14px; accent-color: var(--accent);">
+                    <span>Aktifkan Liveness Check Kedipan Mata (Wajib)</span>
+                  </label>
+                </div>
+              </div>
+
+              <button type="submit" class="btn-primary" style="align-self: flex-end; padding: 0.7rem 1.75rem; font-size: 0.8rem; margin-top: 0.25rem;">
+                ✓ Simpan Jadwal & Parameter
+              </button>
+            </form>
+          </div>
+
+          <!-- SUB-TAB 5: LOG AKTIVITAS -->
+          <div id="settings-content-log" style="display: none; flex-direction: column; gap: 1.25rem; width: 100%; height: 100%;">
+            <div class="settings-subtab-header-banner">
+              <div class="settings-subtab-icon-box">📄</div>
+              <div class="settings-subtab-title-group">
+                <strong style="font-size: 0.9rem; color: #0f172a;">Log Aktivitas Pengelola</strong>
+                <small style="color: var(--text-muted); font-size: 0.68rem;">Riwayat tindakan audit dan pengelolaan data administrasi E-Absensi.</small>
+              </div>
+            </div>
+
+            <div class="settings-log-scroll-wrapper" style="max-height: 380px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 10px; background-color: #ffffff;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <thead style="position: sticky; top: 0; z-index: 2; background-color: #f8fafc;">
+                  <tr>
+                    <th style="padding: 0.65rem 1rem; font-size: 0.62rem; width: 170px;">Waktu (WITA)</th>
+                    <th style="padding: 0.65rem 1rem; font-size: 0.62rem; width: 130px;">Pengguna</th>
+                    <th style="padding: 0.65rem 1rem; font-size: 0.62rem;">Aktivitas</th>
+                  </tr>
+                </thead>
+                <tbody id="table-log-body" style="font-size: 0.74rem;">
+                  <!-- Render Dinamis -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Footer Credits -->
+  <footer class="admin-footer">
+    <span>KEMENTRIAN HAK ASASI MANUSIA RI</span>
+    <small style="color: var(--text-muted); font-size: 0.65rem;">WILAYAH KERJA SULAWESI TENGGARA &bull; &copy; 2026 Sistem E-Absensi Magang.</small>
+    <div class="footer-nav-links" style="display: flex; justify-content: center; gap: 1rem; align-items: center; flex-wrap: wrap;">
+      <a href="https://www.instagram.com/kemenhamwilkersultra?stkn=bjNjOWpzcXA1MGhx" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+        <img src="../img/logo ig.png" alt="Instagram Logo" style="height: 16px; width: 16px; object-fit: contain;"> Instagram Kemenham Wilker Sultra
+      </a>
+      <a href="https://www.tiktok.com/@kemenhamwilkersultra?_r=1&_t=ZS-99lZD8V6BtK" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+        <img src="../img/logo tiktok.png" alt="TikTok Logo" style="height: 16px; width: 16px; object-fit: contain;"> TikTok Kemenham Wilker Sultra
+      </a>
+    </div>
+  </footer>
+
+  <!-- ==================== MODALS (DARK THEME) ==================== -->
+
+  <!-- A. MODAL TAMBAH/EDIT KAMPUS -->
+  <div id="modal-kampus" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrapper">
+          <div class="modal-icon-badge">🏫</div>
+          <div class="modal-title-group">
+            <h3 id="modal-kampus-title">Tambah Kampus Baru</h3>
+            <p>Daftarkan instansi/kampus asal mahasiswa</p>
+          </div>
+        </div>
+        <button class="btn-close-modal" onclick="closeModal('modal-kampus')">&times;</button>
+      </div>
+      
+      <form id="form-kampus" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem;">
+        <input type="hidden" id="kampus-id">
+        <div class="modal-form-group">
+          <label for="kampus-nama">Nama Kampus & Tahun Angkatan</label>
+          <input type="text" id="kampus-nama" class="modal-input-field" placeholder="Contoh: Universitas Nahdlatul Ulama Sulawesi Tenggara 2025" required>
+          <small class="modal-form-desc">Sertakan tahun periode magang agar angkatan berikutnya tidak bentrok.</small>
+        </div>
+        <div class="modal-form-group">
+          <label for="kampus-alamat">Alamat Kampus</label>
+          <textarea id="kampus-alamat" class="modal-input-field" placeholder="Masukkan alamat kampus" style="resize: vertical; min-height: 80px;"></textarea>
+        </div>
+
+        <button type="submit" class="btn-modal-submit">✓ Simpan Kampus</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- B. MODAL REGISTER MAHASISWA (LANDSCAPE) -->
+  <div id="modal-mahasiswa" class="modal-overlay">
+    <div class="modal-card modal-card-landscape">
+      <div class="modal-header">
+        <div class="modal-title-wrapper">
+          <div class="modal-icon-badge">👤</div>
+          <div class="modal-title-group">
+            <h3 id="modal-mahasiswa-title">Daftarkan Mahasiswa Baru</h3>
+            <p>Lengkapi biodata mahasiswa dan perekaman sampel wajah</p>
+          </div>
+        </div>
+        <button class="btn-close-modal" onclick="closeModal('modal-mahasiswa')">&times;</button>
+      </div>
+
+      <form id="form-mahasiswa" style="display: flex; flex-direction: column; gap: 0.85rem; margin-top: 0.5rem;">
+        <input type="hidden" id="mahasiswa-id">
+        
+        <div class="modal-landscape-grid">
+          <!-- Left Column: Input Data Mahasiswa -->
+          <div class="modal-landscape-left">
+            <div class="modal-form-grid-2col">
+              <div class="modal-form-group">
+                <label for="mhs-nama">Nama Lengkap</label>
+                <input type="text" id="mhs-nama" class="modal-input-field" placeholder="Masukkan nama" required>
+              </div>
+              
+              <div class="modal-form-group">
+                <label for="mhs-nim">NIM (Nomor Induk Mahasiswa)</label>
+                <input type="text" id="mhs-nim" class="modal-input-field" placeholder="Masukkan NIM" required>
+              </div>
+            </div>
+
+            <div class="modal-form-grid-2col">
+              <div class="modal-form-group">
+                <label for="mhs-kampus">Kampus Asal</label>
+                <select id="mhs-kampus" class="modal-input-field" style="height: 38px;" required>
+                  <option value="">Pilih Kampus...</option>
+                </select>
+              </div>
+
+              <div class="modal-form-group">
+                <label for="mhs-angkatan">Tahun Angkatan</label>
+                <input type="number" id="mhs-angkatan" class="modal-input-field" placeholder="Contoh: 2026" min="2000" max="2099" required>
+              </div>
+            </div>
+
+            <div class="modal-form-grid-2col">
+              <div class="modal-form-group">
+                <label for="mhs-program">Jenis Program</label>
+                <select id="mhs-program" class="modal-input-field" style="height: 38px;" required>
+                  <option value="Magang" selected>Magang</option>
+                  <option value="KKN">KKN</option>
+                  <option value="PKL">PKL</option>
+                  <option value="Penelitian">Penelitian</option>
+                </select>
+              </div>
+
+              <div class="modal-form-group">
+                <label for="mhs-hp">No. HP / WhatsApp</label>
+                <input type="tel" id="mhs-hp" class="modal-input-field" placeholder="Contoh: 0812xxxxxxxx" required>
+              </div>
+            </div>
+
+            <div class="modal-form-grid-2col">
+              <div class="modal-form-group">
+                <label for="mhs-tgl-mulai">Tanggal Mulai Program</label>
+                <input type="date" id="mhs-tgl-mulai" class="modal-input-field" required>
+              </div>
+
+              <div class="modal-form-group">
+                <label for="mhs-tgl-selesai">Tanggal Selesai Program</label>
+                <input type="date" id="mhs-tgl-selesai" class="modal-input-field" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Perekaman Wajah AI -->
+          <div class="modal-landscape-right">
+            <div class="modal-face-capture-card">
+              <div class="ai-scan-header-badge">
+                <span class="ai-chip-icon">🤖</span>
+                <span class="ai-chip-title">AI Biometric Face Enrollment</span>
+              </div>
+              
+              <div class="modal-cam-view-port">
+                <video id="capture-video" autoplay muted playsinline></video>
+                
+                <!-- Target Reticle & Scanning Frame -->
+                <div class="face-biometric-target" id="face-target-guide">
+                  <div class="corner-bracket top-left"></div>
+                  <div class="corner-bracket top-right"></div>
+                  <div class="corner-bracket bottom-left"></div>
+                  <div class="corner-bracket bottom-right"></div>
+                  <div class="face-oval-ring"></div>
+                  <div class="laser-scanner-line"></div>
+                </div>
+                
+                <!-- Placeholder saat kamera belum menyala -->
+                <div id="cam-placeholder" class="cam-no-video-placeholder">
+                  <div class="cam-icon-pulse-circle">
+                    <span>📷</span>
+                  </div>
+                  <span class="cam-placeholder-main-text">Kamera Belum Aktif</span>
+                  <span class="cam-placeholder-sub-text">Klik tombol "Nyalakan Kamera" untuk membuka sensor wajah</span>
+                </div>
+              </div>
+
+              <!-- Status box -->
+              <div class="capture-status-pill">
+                <span class="status-pulse-dot"></span>
+                <span id="capture-status-text">Klik Nyalakan Kamera untuk mulai</span>
+              </div>
+
+              <!-- 3-Angle Step Indicators -->
+              <div class="capture-steps-indicator-row">
+                <div id="dot-depan" class="capture-step-box">
+                  <span class="step-badge">1</span>
+                  <span class="step-lbl">Depan</span>
+                </div>
+                <div id="dot-kiri" class="capture-step-box">
+                  <span class="step-badge">2</span>
+                  <span class="step-lbl">Toleh Kiri</span>
+                </div>
+                <div id="dot-kanan" class="capture-step-box">
+                  <span class="step-badge">3</span>
+                  <span class="step-lbl">Toleh Kanan</span>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="cam-action-buttons-row">
+                <button type="button" id="btn-toggle-cam" class="btn-cam-toggle">
+                  <span class="btn-icon">⚡</span>
+                  <span>Nyalakan Kamera</span>
+                </button>
+                <button type="button" id="btn-capture-face" class="btn-cam-capture" disabled>
+                  <span class="btn-icon">📸</span>
+                  <span>Ambil Foto</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <small class="modal-form-desc" style="text-align: center; margin-top: 0.2rem;">Wajib mengambil 3 foto sudut berbeda (Depan, sedikit toleh Kiri, sedikit toleh Kanan) demi akurasi verifikasi presensi.</small>
+
+        <button type="submit" class="btn-modal-submit" style="margin-top: 0.2rem;">✓ Simpan Mahasiswa</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- C. MODAL MANUAL ABSENSI -->
+  <div id="modal-manual-absensi" class="modal-overlay">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <div class="modal-title-wrapper">
+          <div class="modal-icon-badge">📝</div>
+          <div class="modal-title-group">
+            <h3>Input Kehadiran Manual</h3>
+            <p>Catat kehadiran mahasiswa secara manual</p>
+          </div>
+        </div>
+        <button class="btn-close-modal" onclick="closeModal('modal-manual-absensi')">&times;</button>
+      </div>
+
+      <form id="form-manual-absensi" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem;">
+        <div class="modal-form-group">
+          <label for="man-mhs">Nama Mahasiswa</label>
+          <select id="man-mhs" class="modal-input-field" style="height: 38px;" required>
+            <option value="">Pilih Mahasiswa...</option>
+          </select>
+        </div>
+
+        <div class="modal-form-group">
+          <label for="man-tanggal">Tanggal</label>
+          <input type="date" id="man-tanggal" class="modal-input-field" required>
+        </div>
+
+        <div class="modal-form-group">
+          <label for="man-status">Status Kehadiran</label>
+          <select id="man-status" class="modal-input-field" style="height: 38px;" required>
+            <option value="hadir">HADIR</option>
+            <option value="terlambat">TERLAMBAT</option>
+            <option value="izin">IZIN</option>
+            <option value="sakit">SAKIT</option>
+            <option value="alpha">ALPHA</option>
+          </select>
+        </div>
+        
+        <p class="modal-form-desc">Data yang diinput manual akan ditandai sebagai entri administratif pada log aktivitas.</p>
+
+        <button type="submit" class="btn-modal-submit">✓ Simpan Status</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- D. MODAL LIHAT PROFIL MAHASISWA (LANDSCAPE) -->
+  <div id="modal-profil-mahasiswa" class="modal-overlay">
+    <div class="modal-card modal-card-landscape">
+      <div class="modal-header">
+        <div class="modal-title-wrapper">
+          <div class="modal-icon-badge">🎓</div>
+          <div class="modal-title-group">
+            <h3>Profil Lengkap Mahasiswa</h3>
+            <p>Biodata, program, status, dan riwayat presensi</p>
+          </div>
+        </div>
+        <button class="btn-close-modal" onclick="closeModal('modal-profil-mahasiswa')">&times;</button>
+      </div>
+
+      <div class="modal-landscape-grid" style="margin-top: 0.75rem;">
+        <!-- Left Column: Hero Header & Biodata -->
+        <div class="modal-landscape-left" style="gap: 0.85rem;">
+          <div class="profile-modal-header-hero">
+            <div class="profile-hero-info">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap;">
+                <span class="profile-hero-name" id="profil-nama">Nama Mahasiswa</span>
+                <span id="profil-status-badge" class="badge-status hadir">Aktif</span>
+              </div>
+              <div class="profile-hero-meta">
+                <span>NIM: <strong id="profil-nim" style="color: #ffffff;">-</strong></span>
+                <span>•</span>
+                <span>Kampus: <strong id="profil-kampus" style="color: #ffffff;">-</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-detail-grid">
+            <div class="profile-detail-item">
+              <span class="label">Angkatan</span>
+              <span class="value" id="profil-angkatan">-</span>
+            </div>
+            <div class="profile-detail-item">
+              <span class="label">Jenis Program</span>
+              <span class="value" id="profil-program">-</span>
+            </div>
+            <div class="profile-detail-item">
+              <span class="label">No. HP / WhatsApp</span>
+              <span class="value" id="profil-hp">-</span>
+            </div>
+            <div class="profile-detail-item">
+              <span class="label">Periode Program</span>
+              <span class="value" id="profil-periode">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Attendance Stats & History Table -->
+        <div class="modal-landscape-right" style="gap: 0.85rem;">
+          <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #ffffff;">📊 Ringkasan Kehadiran</span>
+            <div class="profile-stats-grid">
+              <div class="profile-stat-box">
+                <span class="stat-num" style="color: #22c55e;" id="profil-stat-hadir">0</span>
+                <span class="stat-lbl">Hadir</span>
+              </div>
+              <div class="profile-stat-box">
+                <span class="stat-num" style="color: #eab308;" id="profil-stat-terlambat">0</span>
+                <span class="stat-lbl">Terlambat</span>
+              </div>
+              <div class="profile-stat-box">
+                <span class="stat-num" style="color: #3b82f6;" id="profil-stat-izin">0</span>
+                <span class="stat-lbl">Izin/Sakit</span>
+              </div>
+              <div class="profile-stat-box">
+                <span class="stat-num" style="color: #ef4444;" id="profil-stat-alpha">0</span>
+                <span class="stat-lbl">Alpha</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.4rem; flex: 1;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #ffffff;">🕒 Riwayat Presensi Terakhir</span>
+            <div class="table-responsive" style="max-height: 180px; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;">
+              <table style="font-size: 0.75rem;">
+                <thead>
+                  <tr>
+                    <th style="padding: 0.4rem 0.6rem;">Tanggal</th>
+                    <th style="padding: 0.4rem 0.6rem;">Jam Masuk</th>
+                    <th style="padding: 0.4rem 0.6rem;">Jam Pulang</th>
+                    <th style="padding: 0.4rem 0.6rem; text-align: center;">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="profil-table-history">
+                  <!-- Render Riwayat -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-profil-mahasiswa')">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TAMBAH ADMIN BARU -->
+  <div id="modal-tambah-admin" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1rem; color: #ffffff;">➕ Tambah Akun Admin Baru</h3>
+        <button type="button" class="btn-close-modal" onclick="closeModal('modal-tambah-admin')">&times;</button>
+      </div>
+      <form id="form-tambah-admin" style="padding: 1.25rem;">
+        <div class="modal-form-group" style="margin-bottom: 1rem;">
+          <label for="new-admin-username" style="color: #0f172a; font-weight: 700;">Username Admin Baru</label>
+          <input type="text" id="new-admin-username" class="modal-input-field" placeholder="Masukkan username unik" required autocomplete="username">
+        </div>
+
+        <div class="modal-form-group" style="margin-bottom: 1rem;">
+          <label for="new-admin-password" style="color: #0f172a; font-weight: 700;">Password Admin Baru</label>
+          <div style="position: relative; width: 100%;">
+            <input type="password" id="new-admin-password" class="modal-input-field" style="padding-right: 2.5rem;" placeholder="Minimal 6 karakter" required autocomplete="new-password">
+            <button type="button" class="btn-pwd-eye-toggle" onclick="togglePasswordVisibility('new-admin-password', this)">👁️</button>
+          </div>
+        </div>
+
+        <div class="modal-form-group" style="margin-bottom: 1.25rem;">
+          <label for="new-admin-confirm" style="color: #0f172a; font-weight: 700;">Konfirmasi Password</label>
+          <div style="position: relative; width: 100%;">
+            <input type="password" id="new-admin-confirm" class="modal-input-field" style="padding-right: 2.5rem;" placeholder="Ulangi password baru" required autocomplete="new-password">
+            <button type="button" class="btn-pwd-eye-toggle" onclick="togglePasswordVisibility('new-admin-confirm', this)">👁️</button>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-tambah-admin')">Batal</button>
+          <button type="submit" class="btn-primary" style="padding: 0.6rem 1.25rem;">+ Buat Akun Admin</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>
