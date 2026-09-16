@@ -221,7 +221,10 @@ router.post('/verifikasi', async (req, res) => {
 
   } catch (error) {
     console.error('Error saat verifikasi absensi:', error);
-    res.status(500).json({ success: false, message: 'Terjadi kesalahan internal pada server saat memproses absensi.' });
+    res.status(500).json({ 
+      success: false, 
+      message: error.message ? `Gagal memproses absensi: ${error.message}` : 'Terjadi kesalahan internal pada server saat memproses absensi.' 
+    });
   }
 });
 
