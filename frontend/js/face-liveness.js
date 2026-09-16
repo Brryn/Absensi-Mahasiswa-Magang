@@ -82,13 +82,13 @@ async function loadFaceApiModels() {
       const isLiveServerOnly = window.location.port === '5500' || window.location.protocol === 'file:';
       const modelUri = isLiveServerOnly ? 'http://localhost:3000/models' : '/models';
       
-      // Muat model standar SSD MobilenetV1, Landmarks 68, dan Face Recognition
-      await faceapi.nets.ssdMobilenetv1.loadFromUri(modelUri);
-      await faceapi.nets.faceLandmark68Net.loadFromUri(modelUri);
-      await faceapi.nets.faceRecognitionNet.loadFromUri(modelUri);
-
-      // Muat TinyFaceDetector jika tersedia sebagai akselerator opsional
-      faceapi.nets.tinyFaceDetector.loadFromUri(modelUri).catch(() => {});
+      // Muat seluruh model AI secara paralel untuk kecepatan maksimum di HP & iOS
+      await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(modelUri),
+        faceapi.nets.ssdMobilenetv1.loadFromUri(modelUri),
+        faceapi.nets.faceLandmark68Net.loadFromUri(modelUri),
+        faceapi.nets.faceRecognitionNet.loadFromUri(modelUri)
+      ]);
 
       isModelsLoaded = true;
       console.log(`Model Face-API.js berhasil dimuat dari ${modelUri}`);
@@ -115,7 +115,8 @@ async function setupCamera() {
   if (stream && video.srcObject) return video;
 
   const constraintsList = [
-    { video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: false },
+    { video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { max: 30 } }, audio: false },
+    { video: { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 360 }, frameRate: { max: 30 } }, audio: false },
     { video: { facingMode: 'user' }, audio: false },
     { video: true, audio: false }
   ];
@@ -269,14 +270,17 @@ function startLivenessCheck(gpsCoords) {
     isProcessingFrame = true;
 
     try {
-      // Deteksi wajah tunggal dengan minConfidence 0.30
-      let detection = await faceapi
-        .detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.30 }))
-        .withFaceLandmarks();
-
-      if (!detection && faceapi.nets.tinyFaceDetector.isLoaded) {
+      // Deteksi wajah menggunakan TinyFaceDetector terlebih dahulu (super cepat ~10-15ms per frame untuk HP & iOS)
+      let detection = null;
+      if (faceapi.nets.tinyFaceDetector.isLoaded) {
         detection = await faceapi
-          .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.30 }))
+          .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.25 }))
+          .withFaceLandmarks();
+      }
+
+      if (!detection) {
+        detection = await faceapi
+          .detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.30 }))
           .withFaceLandmarks();
       }
 
