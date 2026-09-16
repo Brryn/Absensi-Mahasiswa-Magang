@@ -12,23 +12,9 @@ let pool = null;
 
 async function getPool() {
   if (!pool) {
-    // 1. Pastikan Database MySQL 'kemenham_absensi' Sudah Ada
-    try {
-      const connTemp = await mysql.createConnection({
-        host: dbHost,
-        port: dbPort,
-        user: dbUser,
-        password: dbPassword
-      });
-      await connTemp.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
-      await connTemp.end();
-    } catch (err) {
-      console.error(`❌ Gagal terhubung ke MySQL Host (${dbHost}:${dbPort}):`, err.message);
-      throw err;
-    }
+    const isCloudHost = dbHost !== 'localhost' && dbHost !== '127.0.0.1';
 
-    // 2. Buat Connection Pool untuk Performa Maksimal
-    pool = mysql.createPool({
+    const poolConfig = {
       host: dbHost,
       port: dbPort,
       user: dbUser,
@@ -37,9 +23,35 @@ async function getPool() {
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
-      dateStrings: true
-    });
-    console.log(`🔌 Koneksi Database MySQL '${dbName}' (${dbHost}:${dbPort}) berhasil.`);
+      dateStrings: true,
+      connectTimeout: 15000
+    };
+
+    if (isCloudHost) {
+      poolConfig.ssl = { rejectUnauthorized: false };
+    } else {
+      // Pastikan Database MySQL Lokal (XAMPP) Sudah Ada
+      try {
+        const connTemp = await mysql.createConnection({
+          host: dbHost,
+          port: dbPort,
+          user: dbUser,
+          password: dbPassword
+        });
+        await connTemp.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+        await connTemp.end();
+      } catch (e) {
+        console.warn('⚠️ Perhatian saat mengecek DB lokal:', e.message);
+      }
+    }
+
+    try {
+      pool = mysql.createPool(poolConfig);
+      console.log(`🔌 Koneksi Database MySQL '${dbName}' (${dbHost}:${dbPort}) berhasil.`);
+    } catch (err) {
+      console.error(`❌ Gagal terhubung ke MySQL Host (${dbHost}:${dbPort}):`, err.message);
+      throw err;
+    }
   }
   return pool;
 }
