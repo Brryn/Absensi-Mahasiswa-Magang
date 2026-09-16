@@ -45,7 +45,10 @@ router.post('/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Error saat login:', error);
-    res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server.' });
+    res.status(500).json({ 
+      success: false, 
+      message: error.message ? `Koneksi database gagal: ${error.message}` : 'Terjadi kesalahan pada server.' 
+    });
   }
 });
 
