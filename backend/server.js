@@ -49,11 +49,15 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(publicPath, 'index.html'));
 });
 
-// Jalankan Server
-app.listen(PORT, () => {
-  console.log(`==================================================`);
-  console.log(` Server E-Absensi Kemenham berjalan sukses!`);
-  console.log(` Port : ${PORT}`);
-  console.log(` Link : http://localhost:${PORT}`);
-  console.log(`==================================================`);
-});
+// Jalankan Server jika dipanggil secara langsung (bukan serverless Vercel)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`==================================================`);
+    console.log(` Server E-Absensi Kemenham berjalan sukses!`);
+    console.log(` Port : ${PORT}`);
+    console.log(` Link : http://localhost:${PORT}`);
+    console.log(`==================================================`);
+  });
+}
+
+module.exports = app;
