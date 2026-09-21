@@ -3,6 +3,9 @@ const fs = require('fs');
 const path = require('path');
 const mysql = require('mysql2/promise');
 
+const arg = process.argv[2];
+const connectionString = arg || process.env.DATABASE_URL || process.env.MYSQL_URL || process.env.MYSQLURL;
+
 async function importSql() {
   console.log('====================================================');
   console.log('  🚀 IMPORT DATABASE KE AIVEN CLOUD MYSQL           ');
@@ -16,28 +19,35 @@ async function importSql() {
     process.exit(1);
   }
 
-  // Pilih file .sql (utamakan kemenham_absensi.sql jika baru saja di-export)
   let sqlFile = files.find(f => f.toLowerCase().includes('kemenham')) || files[0];
   const sqlPath = path.join(dbDir, sqlFile);
   console.log(`📄 Membaca file SQL: database/${sqlFile}`);
 
   const sqlContent = fs.readFileSync(sqlPath, 'utf8');
 
-  const dbHost = process.env.DB_HOST;
-  const dbPort = parseInt(process.env.DB_PORT || '3306', 10);
-  const dbUser = process.env.DB_USER;
-  const dbPassword = process.env.DB_PASSWORD;
-  const dbName = process.env.DB_NAME || 'defaultdb';
+  let connConfig = {};
 
-  if (!dbHost || !dbUser) {
-    console.error('❌ DB_HOST / DB_USER di file .env belum diisi dengan kredensial Aiven!');
-    process.exit(1);
-  }
+  if (connectionString) {
+    console.log('🔌 Menggunakan Connection String / Service URI...');
+    connConfig = {
+      uri: connectionString,
+      multipleStatements: true,
+      ssl: { rejectUnauthorized: false }
+    };
+  } else {
+    const dbHost = process.env.DB_HOST;
+    const dbPort = parseInt(process.env.DB_PORT || '3306', 10);
+    const dbUser = process.env.DB_USER;
+    const dbPassword = process.env.DB_PASSWORD;
+    const dbName = process.env.DB_NAME || 'defaultdb';
 
-  console.log(`🔌 Menyambung ke Aiven Cloud MySQL (${dbHost}:${dbPort})...`);
+    if (!dbHost || !dbUser) {
+      console.error('❌ Harap berikan Service URI Aiven atau isi file .env!');
+      console.log('👉 Contoh perintah: node scripts/import-sql-to-aiven.js "mysql://avnadmin:password@host:port/defaultdb"');
+      process.exit(1);
+    }
 
-  try {
-    const conn = await mysql.createConnection({
+    connConfig = {
       host: dbHost,
       port: dbPort,
       user: dbUser,
@@ -45,11 +55,14 @@ async function importSql() {
       database: dbName,
       multipleStatements: true,
       ssl: { rejectUnauthorized: false }
-    });
+    };
+  }
 
-    console.log(`✅ Terhubung ke database '${dbName}'. Mengunggah seluruh tabel & data...`);
+  try {
+    const conn = await mysql.createConnection(connConfig);
 
-    // Hapus sintaks CREATE DATABASE & USE agar mengimpor ke defaultdb Aiven
+    console.log(`✅ Terhubung ke Aiven Cloud MySQL. Mengunggah seluruh tabel & data...`);
+
     let cleanSql = sqlContent
       .replace(/CREATE DATABASE[\s\S]*?;/gi, '')
       .replace(/USE `.*?`;/gi, '');
