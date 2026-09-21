@@ -2,54 +2,70 @@ require('dotenv').config();
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 
-const dbHost = process.env.DB_HOST || 'localhost';
-const dbPort = parseInt(process.env.DB_PORT || '3306', 10);
-const dbUser = process.env.DB_USER || 'root';
-const dbPassword = process.env.DB_PASSWORD || '';
-const dbName = process.env.DB_NAME || 'kemenham_absensi';
+const connectionString = process.env.DATABASE_URL || process.env.MYSQL_URL || process.env.MYSQLURL;
 
 let pool = null;
 
 async function getPool() {
   if (!pool) {
-    const isCloudHost = dbHost !== 'localhost' && dbHost !== '127.0.0.1';
+    let poolConfig = {};
 
-    const poolConfig = {
-      host: dbHost,
-      port: dbPort,
-      user: dbUser,
-      password: dbPassword,
-      database: dbName,
-      waitForConnections: true,
-      connectionLimit: 10,
-      queueLimit: 0,
-      dateStrings: true,
-      connectTimeout: 15000
-    };
-
-    if (isCloudHost) {
-      poolConfig.ssl = { rejectUnauthorized: false };
+    if (connectionString) {
+      console.log('🔌 Menggunakan Connection String / URI URL Database...');
+      poolConfig = {
+        uri: connectionString,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        dateStrings: true,
+        connectTimeout: 20000,
+        ssl: { rejectUnauthorized: false }
+      };
     } else {
-      // Pastikan Database MySQL Lokal (XAMPP) Sudah Ada
-      try {
-        const connTemp = await mysql.createConnection({
-          host: dbHost,
-          port: dbPort,
-          user: dbUser,
-          password: dbPassword
-        });
-        await connTemp.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
-        await connTemp.end();
-      } catch (e) {
-        console.warn('⚠️ Perhatian saat mengecek DB lokal:', e.message);
+      const dbHost = process.env.DB_HOST || 'localhost';
+      const dbPort = parseInt(process.env.DB_PORT || '3306', 10);
+      const dbUser = process.env.DB_USER || 'root';
+      const dbPassword = process.env.DB_PASSWORD || '';
+      const dbName = process.env.DB_NAME || 'kemenham_absensi';
+      const isCloudHost = dbHost !== 'localhost' && dbHost !== '127.0.0.1';
+
+      poolConfig = {
+        host: dbHost,
+        port: dbPort,
+        user: dbUser,
+        password: dbPassword,
+        database: dbName,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        dateStrings: true,
+        connectTimeout: 20000
+      };
+
+      if (isCloudHost) {
+        poolConfig.ssl = { rejectUnauthorized: false };
+      } else {
+        // Pastikan Database MySQL Lokal (XAMPP) Sudah Ada
+        try {
+          const connTemp = await mysql.createConnection({
+            host: dbHost,
+            port: dbPort,
+            user: dbUser,
+            password: dbPassword
+          });
+          await connTemp.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+          await connTemp.end();
+        } catch (e) {
+          console.warn('⚠️ Perhatian saat mengecek DB lokal:', e.message);
+        }
       }
     }
 
     try {
       pool = mysql.createPool(poolConfig);
-      console.log(`🔌 Koneksi Database MySQL '${dbName}' (${dbHost}:${dbPort}) berhasil.`);
+      console.log('🔌 Koneksi Pool Database MySQL berhasil dibuat.');
     } catch (err) {
-      console.error(`❌ Gagal terhubung ke MySQL Host (${dbHost}:${dbPort}):`, err.message);
+      console.error('❌ Gagal terhubung ke MySQL Host:', err.message);
       throw err;
     }
   }
