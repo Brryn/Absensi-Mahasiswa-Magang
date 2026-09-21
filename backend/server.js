@@ -44,6 +44,15 @@ app.use('/api', (req, res) => {
   res.status(404).json({ success: false, message: 'API Endpoint tidak ditemukan.' });
 });
 
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('SERVER ERROR HANDLER:', err);
+  res.status(500).json({
+    success: false,
+    message: `Server Error: ${err.message || String(err)}`
+  });
+});
+
 // Fallback untuk SPA jika ada, atau sekadar mengembalikan index html absensi mahasiswa
 app.get('*', (req, res) => {
   res.sendFile(path.join(publicPath, 'index.html'));
