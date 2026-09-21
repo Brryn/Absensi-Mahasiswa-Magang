@@ -25,11 +25,11 @@ app.use(express.json({ limit: '10mb' })); // Limit besar untuk mengunggah face d
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// Routing API
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/kampus', require('./routes/kampus'));
-app.use('/api/mahasiswa', require('./routes/mahasiswa'));
-app.use('/api/absensi', require('./routes/absensi'));
+// Routing API (Dukung prefix /api dan tanpa prefix untuk Vercel Serverless)
+app.use(['/api/auth', '/auth'], require('./routes/auth'));
+app.use(['/api/kampus', '/kampus'], require('./routes/kampus'));
+app.use(['/api/mahasiswa', '/mahasiswa'], require('./routes/mahasiswa'));
+app.use(['/api/absensi', '/absensi'], require('./routes/absensi'));
 
 // Menyajikan file statis (otomatis gunakan folder dist/ jika ada, atau frontend/ untuk dev)
 const distPath = path.join(__dirname, '..', 'dist');

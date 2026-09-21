@@ -25,9 +25,16 @@ const api = {
         return response.blob();
       }
 
-      const data = await response.json();
+      let data = {};
+      try {
+        data = await response.json();
+      } catch (e) {
+        if (!response.ok) {
+          throw new Error(`Koneksi Gagal (${response.status}): Silakan coba beberapa saat lagi.`);
+        }
+      }
       if (!response.ok) {
-        throw new Error(data.message || 'Terjadi kesalahan pada server.');
+        throw new Error(data.message || `Terjadi kesalahan pada server (${response.status}).`);
       }
       return data;
     } catch (error) {
