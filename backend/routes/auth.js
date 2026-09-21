@@ -47,7 +47,7 @@ router.post('/login', async (req, res) => {
     console.error('Error saat login:', error);
     res.status(500).json({ 
       success: false, 
-      message: error.message || 'Terjadi kesalahan pada server.' 
+      message: `ERR [${error.code || 'NOCODE'}]: ${error.message}` 
     });
   }
 });
