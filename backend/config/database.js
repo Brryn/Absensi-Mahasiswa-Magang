@@ -2,7 +2,7 @@ require('dotenv').config();
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 
-const DEFAULT_AIVEN_URI = Buffer.from('bXlzcWw6Ly9hdm5hZG1pbjpBVk5TX2xxWFMxRXRORHI0NzgtV3VlcGNAbXlzcWwtMmY4OTEzZS1ra24tdW51c3VsdHJhLTIwMjYuYS5haXZlbmNsb3VkLmNvbToxNzA0OS9kZWZhdWx0ZGI=', 'base64').toString('utf-8');
+const DEFAULT_AIVEN_URI = Buffer.from('bXlzcWw6Ly9hdm5hZG1pbjpBVk5TX2xxWFMxRXRORHI0NzgtV3VlcGNAbXlzcWwtMmY4OWExM2Uta2tuLXVudXN1bHRyYS0yMDI2LmEuYWl2ZW5jbG91ZC5jb206MTcwNDkvZGVmYXVsdGRi', 'base64').toString('utf-8');
 const connectionString = process.env.DATABASE_URL || process.env.MYSQL_URL || process.env.MYSQLURL || DEFAULT_AIVEN_URI;
 
 let pool = null;

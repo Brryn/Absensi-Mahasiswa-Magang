@@ -47,7 +47,7 @@ router.post('/login', async (req, res) => {
     console.error('Error saat login:', error);
     res.status(500).json({ 
       success: false, 
-      message: `Error Backend: ${error.message || String(error)}` 
+      message: error.message || 'Terjadi kesalahan pada server.' 
     });
   }
 });
