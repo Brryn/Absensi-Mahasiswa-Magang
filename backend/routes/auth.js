@@ -8,7 +8,9 @@ const { catatAktivitas } = require('../utils/logger');
 
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+  const body = req.body || {};
+  const username = body.username;
+  const password = body.password;
 
   if (!username || !password) {
     return res.status(400).json({ success: false, message: 'Username dan password harus diisi.' });
