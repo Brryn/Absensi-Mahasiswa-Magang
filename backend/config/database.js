@@ -13,15 +13,32 @@ async function getPool() {
 
     if (connectionString) {
       console.log('🔌 Menggunakan Connection String / URI URL Database...');
-      poolConfig = {
-        uri: connectionString,
-        waitForConnections: true,
-        connectionLimit: 10,
-        queueLimit: 0,
-        dateStrings: true,
-        connectTimeout: 20000,
-        ssl: { rejectUnauthorized: false }
-      };
+      try {
+        const u = new URL(connectionString);
+        poolConfig = {
+          host: u.hostname,
+          port: parseInt(u.port || '3306', 10),
+          user: u.username,
+          password: decodeURIComponent(u.password),
+          database: u.pathname.replace(/^\//, '') || 'defaultdb',
+          waitForConnections: true,
+          connectionLimit: 5,
+          queueLimit: 0,
+          dateStrings: true,
+          connectTimeout: 15000,
+          ssl: { rejectUnauthorized: false }
+        };
+      } catch (e) {
+        poolConfig = {
+          uri: connectionString,
+          waitForConnections: true,
+          connectionLimit: 5,
+          queueLimit: 0,
+          dateStrings: true,
+          connectTimeout: 15000,
+          ssl: { rejectUnauthorized: false }
+        };
+      }
     } else {
       const dbHost = process.env.DB_HOST || 'localhost';
       const dbPort = parseInt(process.env.DB_PORT || '3306', 10);
