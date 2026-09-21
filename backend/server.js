@@ -9,12 +9,12 @@ const { initDb } = require('./config/database');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Inisialisasi Database SQLite
-initDb().then(() => {
-  console.log('Inisialisasi database selesai.');
-}).catch(err => {
-  console.error('Gagal menginisialisasi database pada startup:', err);
-});
+// Inisialisasi Database (Jika belum ada)
+if (process.env.NODE_ENV !== 'production') {
+  initDb().catch(err => {
+    console.warn('Perhatian saat initDb:', err.message);
+  });
+}
 
 // Middleware Global
 app.use(cors({
