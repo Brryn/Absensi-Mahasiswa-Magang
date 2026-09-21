@@ -60,8 +60,10 @@ async function importSql() {
 
   try {
     const conn = await mysql.createConnection(connConfig);
-
     console.log(`✅ Terhubung ke Aiven Cloud MySQL. Mengunggah seluruh tabel & data...`);
+
+    await conn.query('SET SESSION sql_require_primary_key = 0;');
+    await conn.query('SET FOREIGN_KEY_CHECKS = 0;');
 
     let cleanSql = sqlContent
       .replace(/CREATE DATABASE[\s\S]*?;/gi, '')
